@@ -1,0 +1,9 @@
+<html>
+  <body>
+	<ul>
+    {% for drawing in drawings %}
+        <li><img src="/thumbnail?drawing_id={{ drawing.key }}" /></li>
+    {% endfor %}
+	</ul>
+  </body>
+</html>
