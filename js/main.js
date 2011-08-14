@@ -8,27 +8,53 @@ var DISPLAY_TIME = 5;
 var FINAL_X = 50;
 var FINAL_Y = -38;
 var FINAL_Z = 510;
-var FPS = 60;
+var FPS = 120;
 var COLORS = [
-	{foreground: {r: 255, g: 100, b: 100}, background: {r: 170, g: 0, b: 0}},
-	{foreground: {r: 255, g: 204, b: 0}, background: {r: 255, g: 102, b: 0}},
-	{foreground: {r: 234, g: 255, b: 89}, background: {r: 143, g: 195, b: 4}},
-	{foreground: {r: 81, g: 216, b: 255}, background: {r: 6, g: 121, b: 218}},
-	{foreground: {r: 224, g: 118, b: 255}, background: {r: 121, g: 6, b: 218}}
+	{foreground: {r: 255, g: 100, b: 100}, background: {r: 0, g: 0, b: 0}},
+	{foreground: {r: 255, g: 204, b: 0}, background: {r: 0, g: 0, b: 0}},
+	{foreground: {r: 234, g: 255, b: 89}, background: {r: 0, g: 0, b: 0}},
+	{foreground: {r: 81, g: 216, b: 255}, background: {r: 0, g: 0, b: 0}},
+	{foreground: {r: 224, g: 118, b: 255}, background: {r: 0, g: 0, b: 0}}
 ];
 var DATA_REFRESH_TIME = 5000;
+var ALTERNATE_DRAWING_MODULUS = 4;
 
 var colorCount = 0;
 var canvases = [];
+var drawing_count = 0;
 
 $(init);
 
 function init() {
-	getData();
+	resize_overlay();
+	
+	drawing_count++;
+	if($.getUrlVar('alternate_drawing_id')!=null){
+		if((drawing_count % ALTERNATE_DRAWING_MODULUS) == 0) {
+			getData($.getUrlVar('alternate_drawing_id'));
+		}else{
+			getData($.getUrlVar('drawing_id'));
+		}
+	}else{
+		getData($.getUrlVar('drawing_id'));
+	}
+	
+	console.log(drawing_count);
+	
+	$(window).resize(function(){resize_overlay()});
 }
 
-function getData() {
-	$.getJSON('data.json', writeData);
+function resize_overlay() {
+	$('#border-overlay').height($(window).height()+"px");
+	$('#border-overlay').width($(window).width()+"px");	
+}
+
+function getData(drawing_id) {
+	if(drawing_id == null){
+		$.getJSON('data.json', writeData);
+	}else{
+		$.getJSON('data.json?drawing_id='+drawing_id, writeData);
+	}
 }
 
 function writeData(data) {
@@ -234,3 +260,20 @@ function drawCanvas() {
 		}
 	}
 }
+
+$.extend({
+  getUrlVars: function(){
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+      hash = hashes[i].split('=');
+      vars.push(hash[0]);
+      vars[hash[0]] = hash[1];
+    }
+    return vars;
+  },
+  getUrlVar: function(name){
+    return $.getUrlVars()[name];
+  }
+});

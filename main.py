@@ -23,8 +23,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 from google.appengine.ext import db
 
-import png
-from StringIO import StringIO
+from models import Path
 
 class IndexHandler(webapp.RequestHandler):
     def get(self):
@@ -38,8 +37,8 @@ class DrawHandler(webapp.RequestHandler):
 
 class DataHandler(webapp.RequestHandler):
     def post(self):
-        data = json.loads(self.request.body)
-        logging.error("Starting...")
+        logging.info("Data POST Starting...")
+        data = json.loads(self.request.body)   
         paths = json.dumps(data['paths'])
         if len(paths) > 400:
             json_hash = md5.new(str(paths)[400]).hexdigest()
@@ -51,70 +50,22 @@ class DataHandler(webapp.RequestHandler):
         self.response.out.write('{ "success" : "ok" }')   
  
     def get(self):
-        q = Path.all()
-        q.order("play_count")
-        path = q.fetch(1)[0]
+        drawing_id = self.request.get('drawing_id', default_value=None)
+        logging.info("Data GET Starting (%s)..." % drawing_id)
+        if drawing_id is None:
+            q = Path.all()
+            q.order("play_count")
+            path = q.fetch(1)[0]
+        else:
+            path = Path.get(db.Key(drawing_id))
         path.play_count = path.play_count + 1
         path.put()
-        self.response.out.write('[{"paths":'+path.json+',"id":178}]')
-
-class Path(db.Model):
-    json = db.TextProperty(required=True)
-    date_created = db.DateTimeProperty(required=True, auto_now_add=True)
-    play_count = db.IntegerProperty(required=True, default=0)
-
-class AdminHandler(webapp.RequestHandler):
-    def get(self):
-        q = Path.all()
-        q.order("-date_created")
-        template_values = {
-            'drawings': q,
-        }
-        path = os.path.join(os.path.dirname(__file__), 'templates/admin.html')
-        self.response.out.write(template.render(path, template_values))
-
-class ThumbnailHandler(webapp.RequestHandler):
-    def get(self):
-        drawing_id = self.request.get('drawing_id')
-
-        path = Path.get(db.Key(drawing_id))
-        paths = json.loads(path.json)
-    
-        max_x = 0
-        max_y = 0
-
-        zoom_factor = 0.25
-
-        # Determine bounds
-        for path in paths:
-            for point in path:
-               if point['x'] > max_x:
-                  max_x = point['x']
-               if point['y'] > max_y:
-                  max_y = point['y']
-
-        max_x = int(max_x * zoom_factor)
-        max_y = int(max_y * zoom_factor)
-
-        img_matrix = [[1 for col in range(max_x+1)] for row in range(max_y+1)]
-        
-        for path in paths:
-            for point in path:
-               img_matrix[int(point['y']*zoom_factor)][int(point['x']*zoom_factor)] = 0       
-    
-        f = StringIO()
-        w = png.Writer(len(img_matrix[0]), len(img_matrix), greyscale=True, bitdepth=1)
-        w.write(f, img_matrix)
-
-        self.response.headers['Content-Type'] = 'image/png'
-        self.response.out.write(f.getvalue())
+        self.response.out.write('[{"paths":'+path.json+',"success":true}]')
 
 def main():
     application = webapp.WSGIApplication([('/', IndexHandler),
                                           ('/draw', DrawHandler),
                                           ('/data.json', DataHandler),
-                                          ('/thumbnail', ThumbnailHandler),
-                                          ('/admin', AdminHandler),
                                          ],
                                          debug=True)
     util.run_wsgi_app(application)

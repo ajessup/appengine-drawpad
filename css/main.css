@@ -1,6 +1,13 @@
 
 /* GENERAL ========================================= */
 
+@font-face {
+  font-family: 'Gentium Basic';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Gentium Basic'), local('GentiumBasic'), url('gentium_basic.woff') format('woff');
+}
+
 /* Zero default margin & padding around common elements */
 blockquote, body, dd, dl, dt, fieldset, form, h1, h2, h3, h4, h5, h6, li, ol, p, ul
 {
@@ -63,12 +70,14 @@ input, select, table, textarea
 
 h1 {
 	position: absolute;
+	z-index: 10000;
 	left: 20px;
 	top: 20px;
 	z-index: 1000;
 	font-size: 250%;
 	line-height: 1;
 	opacity: 0;
+	font-family: Gentium Basic, Times, serif;
 }
 
 canvas

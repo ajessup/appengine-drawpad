@@ -74,9 +74,10 @@ function init() {
 			
 			serial += ']}';
 
-			$.ajax('/data.json', 
+			$.ajax( 
 				{
-					type: 'POST', 
+					url: '/data.json',
+					type: "POST",
 					contentType: 'application/json', 
 					dataType:'json', 
 					processData: false, 
@@ -84,6 +85,9 @@ function init() {
 					data: serial, 
 					success: function() {
 						var saved = $('<div id="saved">Saved!</div>').appendTo('body')
+					},
+					error: function(xhr, errorText, error) {
+						alert("Couldn't save. "+errorText)
 					}
 				}
 			);

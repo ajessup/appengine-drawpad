@@ -2,7 +2,12 @@
   <body>
 	<ul>
     {% for drawing in drawings %}
-        <li><img src="/thumbnail?drawing_id={{ drawing.key }}" /></li>
+        <li>
+			{{ drawing.play_count }}
+			{{ drawing.date_created.date }} {{ drawing.date_created.hour }}:{{ drawing.date_created.minute }}
+			<a href="/admin/delete?drawing_id={{ drawing.key }}">Delete</a>
+			<img src="/admin/thumbnail?drawing_id={{ drawing.key }}" />
+		</li>
     {% endfor %}
 	</ul>
   </body>
