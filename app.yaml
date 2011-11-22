@@ -1,21 +1,15 @@
-application: kezu-sid
+application: drawpad-appspot
 version: 1
 runtime: python
 api_version: 1
 
 handlers:
-- url: /js
-  static_dir: js
-  
-- url: /images
-  static_dir: images
-  
-- url: /css
-  static_dir: css
+- url: /assets
+  static_dir: assets
   
 - url: /_ah/remote_api
   script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
-  #login: admin
+  login: admin
 
 - url: /admin/.*
   script: admin.py
@@ -25,4 +19,4 @@ handlers:
   script: main.py
   
 builtins:
-  - datastore_admin: on
+- datastore_admin: on
